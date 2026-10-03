@@ -5,7 +5,12 @@ namespace MetroRailApp.Core.Interfaces;
 public interface IAuthService
 {
     Task<AuthResponseDto?> RegisterAsync(RegisterDto dto, string role = "User");
-    Task<AuthResponseDto?> LoginAsync(LoginDto dto);
+    Task<LoginResponseDto?> LoginAsync(LoginDto dto);
+    Task<bool> IsMfaEnabledAsync(string userId);
+    Task<MfaSetupResponseDto?> GetMfaSetupAsync(string userId);
+    Task<bool> DisableMfaAsync(string userId);
+    Task<bool> EnableMfaAsync(string userId, string code);
+    Task<AuthResponseDto?> VerifyMfaAsync(string userId, string code);
 }
 
 public interface ILineService

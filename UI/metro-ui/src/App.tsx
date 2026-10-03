@@ -21,6 +21,7 @@ import FareCalculator from './pages/user/FareCalculator';
 import MetroMap from './pages/user/MetroMap';
 import HomePage from './pages/user/HomePage';
 import TicketBooking from './pages/user/TicketBooking';
+import MfaSetupPage from './pages/user/MfaSetupPage';
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/fare" element={<FareCalculator />} />
                 <Route path="/map" element={<MetroMap />} />
                 <Route path="/tickets" element={<ProtectedRoute><TicketBooking /></ProtectedRoute>} />
+                <Route path="/mfa-setup" element={<ProtectedRoute><MfaSetupPage /></ProtectedRoute>} />
               </Routes>
             </div>
           </div>

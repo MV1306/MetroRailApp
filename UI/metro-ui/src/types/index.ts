@@ -54,6 +54,7 @@ export interface Platform {
 }
 export interface AuthResponse {
   token: string; email: string; fullName: string; role: string;
+  mfaRequired?: boolean; userId?: string;
 }
 export interface LineTimetable {
   id: number; lineId: number; lineName: string; lineColor: string;

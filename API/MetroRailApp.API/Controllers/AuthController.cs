@@ -3,6 +3,7 @@ using MetroRailApp.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace MetroRailApp.API.Controllers;
 
@@ -31,5 +32,48 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.LoginAsync(dto);
         return result == null ? Unauthorized(new { error = "Invalid email or password." }) : Ok(result);
+    }
+
+    [HttpGet("mfa/status")]
+    [Authorize]
+    public async Task<IActionResult> MfaStatus()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var enabled = await authService.IsMfaEnabledAsync(userId);
+        return Ok(new { enabled });
+    }
+
+    [HttpGet("mfa/setup")]
+    [Authorize]
+    public async Task<IActionResult> MfaSetup()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await authService.GetMfaSetupAsync(userId);
+        return result == null ? NotFound() : Ok(result);
+    }
+
+    [HttpPost("mfa/enable")]
+    [Authorize]
+    public async Task<IActionResult> MfaEnable(MfaVerifyDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var ok = await authService.EnableMfaAsync(userId, dto.Code);
+        return ok ? Ok() : BadRequest(new { error = "Invalid code." });
+    }
+
+    [HttpPost("mfa/disable")]
+    [Authorize]
+    public async Task<IActionResult> MfaDisable()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var ok = await authService.DisableMfaAsync(userId);
+        return ok ? Ok() : BadRequest(new { error = "Failed to disable MFA." });
+    }
+
+    [HttpPost("mfa/verify")]
+    public async Task<IActionResult> MfaVerify([FromBody] MfaVerifyDto dto, [FromQuery] string userId)
+    {
+        var result = await authService.VerifyMfaAsync(userId, dto.Code);
+        return result == null ? Unauthorized(new { error = "Invalid code." }) : Ok(result);
     }
 }

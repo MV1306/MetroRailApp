@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Form, Input, Button, Typography, message, Divider } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, ArrowRightOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { login, register } from '../api/auth';
+import { login, register, verifyMfa } from '../api/auth';
 
 export default function LoginPage() {
   const { login: setUser } = useAuth();
@@ -11,15 +11,31 @@ export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [mfaState, setMfaState] = useState<{ userId: string } | null>(null);
 
   const handleLogin = async (values: { email: string; password: string }) => {
     setLoading(true);
     try {
       const { data } = await login(values.email, values.password);
+      if (data.mfaRequired) {
+        setMfaState({ userId: data.userId! });
+      } else {
+        setUser(data);
+        navigate(data.role === 'Admin' ? '/admin' : '/');
+      }
+    } catch {
+      messageApi.error('Invalid email or password');
+    } finally { setLoading(false); }
+  };
+
+  const handleMfa = async (values: { code: string }) => {
+    setLoading(true);
+    try {
+      const { data } = await verifyMfa(mfaState!.userId, values.code);
       setUser(data);
       navigate(data.role === 'Admin' ? '/admin' : '/');
     } catch {
-      messageApi.error('Invalid email or password');
+      messageApi.error('Invalid authenticator code');
     } finally { setLoading(false); }
   };
 
@@ -89,31 +105,49 @@ export default function LoginPage() {
         minHeight: '100vh',
       }}>
         <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>👋</div>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>{mfaState ? '🔐' : '👋'}</div>
           <Typography.Title level={2} style={{ margin: 0, color: '#0d47a1', fontWeight: 800 }}>
-            {tab === 'login' ? 'Welcome back' : 'Create account'}
+            {mfaState ? 'Two-Factor Auth' : tab === 'login' ? 'Welcome back' : 'Create account'}
           </Typography.Title>
           <Typography.Text type="secondary" style={{ fontSize: 14 }}>
-            {tab === 'login' ? 'Sign in to your Chennai Metro account' : 'Join Chennai Metro today'}
+            {mfaState ? 'Enter the code from Google Authenticator' : tab === 'login' ? 'Sign in to your Chennai Metro account' : 'Join Chennai Metro today'}
           </Typography.Text>
         </div>
 
-        {/* Tab toggle */}
-        <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: 12, padding: 4, marginBottom: 28 }}>
-          {(['login', 'register'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer',
-              fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
-              background: tab === t ? '#fff' : 'transparent',
-              color: tab === t ? '#1565c0' : '#64748b',
-              boxShadow: tab === t ? '0 2px 8px rgba(21,101,192,0.12)' : 'none',
-            }}>
-              {t === 'login' ? 'Sign In' : 'Register'}
-            </button>
-          ))}
-        </div>
+        {/* Tab toggle — hidden during MFA */}
+        {!mfaState && (
+          <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: 12, padding: 4, marginBottom: 28 }}>
+            {(['login', 'register'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer',
+                fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
+                background: tab === t ? '#fff' : 'transparent',
+                color: tab === t ? '#1565c0' : '#64748b',
+                boxShadow: tab === t ? '0 2px 8px rgba(21,101,192,0.12)' : 'none',
+              }}>
+                {t === 'login' ? 'Sign In' : 'Register'}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {tab === 'login' ? (
+        {mfaState ? (
+          <Form layout="vertical" onFinish={handleMfa} autoComplete="off">
+            <Form.Item name="code" rules={[{ required: true, len: 6, message: 'Enter the 6-digit code' }]}>
+              <Input.OTP length={6} size="large" />
+            </Form.Item>
+            <Button
+              type="primary" htmlType="submit" block size="large" loading={loading}
+              icon={<SafetyOutlined />}
+              style={{ height: 48, borderRadius: 10, fontWeight: 700, fontSize: 15, background: 'linear-gradient(135deg, #1565c0, #0288d1)', border: 'none', boxShadow: '0 4px 16px rgba(21,101,192,0.35)', marginTop: 4 }}
+            >
+              Verify
+            </Button>
+            <Button type="link" block style={{ marginTop: 8 }} onClick={() => setMfaState(null)}>
+              Back to login
+            </Button>
+          </Form>
+        ) : tab === 'login' ? (
           <Form layout="vertical" onFinish={handleLogin} autoComplete="off">
             <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'Enter a valid email' }]}>
               <Input

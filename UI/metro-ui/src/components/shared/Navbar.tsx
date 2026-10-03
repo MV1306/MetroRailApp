@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   HomeOutlined, CompassOutlined, EnvironmentOutlined,
   DollarOutlined, GlobalOutlined, SettingOutlined,
-  LogoutOutlined, UserOutlined, TagsOutlined,
+  LogoutOutlined, UserOutlined, TagsOutlined, SafetyOutlined,
 } from '@ant-design/icons';
 
 const NAV = [
@@ -34,11 +34,13 @@ export function Navbar() {
 
   const userMenuItems = [
     ...(isAdmin ? [{ key: 'admin', label: 'Admin Panel', icon: <SettingOutlined /> }] : []),
+    { key: 'mfa-setup', label: 'Two-Factor Auth', icon: <SafetyOutlined /> },
     { key: 'logout', label: 'Sign Out', icon: <LogoutOutlined />, danger: true },
   ];
 
   const handleUserMenu = ({ key }: { key: string }) => {
     if (key === 'admin') navigate('/admin');
+    if (key === 'mfa-setup') navigate('/mfa-setup');
     if (key === 'logout') { logout(); navigate('/'); }
   };
 
