@@ -94,6 +94,7 @@ public class GateService(AppDbContext db) : IGateService
 {
     public async Task<List<StationGateDto>> GetByStationAsync(int stationId) =>
         await db.StationGates.Where(g => g.StationId == stationId)
+            .OrderBy(g => g.GateNumber)
             .Select(g => new StationGateDto(g.Id, g.StationId, g.GateNumber, g.Latitude, g.Longitude, g.Description, g.Accessibles))
             .ToListAsync();
 
@@ -129,6 +130,7 @@ public class FeederServiceImpl(AppDbContext db) : IFeederService
 {
     public async Task<List<FeederServiceDto>> GetByStationAsync(int stationId) =>
         await db.FeederServices.Where(f => f.StationId == stationId)
+            .OrderBy(f => f.Id)
             .Select(f => new FeederServiceDto(f.Id, f.StationId, f.Type, f.Description)).ToListAsync();
 
     public async Task<FeederServiceDto> CreateAsync(FeederServiceUpsertDto dto)

@@ -96,6 +96,7 @@ public class ConnectionService(AppDbContext db) : IConnectionService
 {
     public async Task<List<StationConnectionDto>> GetAllAsync() =>
         await db.StationConnections.Include(c => c.FromStation).Include(c => c.ToStation)
+            .OrderBy(c => c.Id)
             .Select(c => new StationConnectionDto(c.Id, c.FromStationId, c.FromStation.Name, c.ToStationId, c.ToStation.Name, c.DistanceKm, c.TravelTimeMinutes))
             .ToListAsync();
 
@@ -133,6 +134,7 @@ public class InterchangeService(AppDbContext db) : IInterchangeService
 {
     public async Task<List<InterchangeDto>> GetAllAsync() =>
         await db.Interchanges.Include(i => i.Station).Include(i => i.Line1).Include(i => i.Line2)
+            .OrderBy(i => i.Id)
             .Select(i => new InterchangeDto(i.Id, i.StationId, i.Station.Name, i.Line1Id, i.Line1.Name, i.Line2Id, i.Line2.Name, i.TransferTimeMinutes))
             .ToListAsync();
 

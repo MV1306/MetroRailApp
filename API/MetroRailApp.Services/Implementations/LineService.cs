@@ -8,7 +8,7 @@ namespace MetroRailApp.Services.Implementations;
 public class LineService(AppDbContext db) : ILineService
 {
     public async Task<List<LineDto>> GetAllAsync() =>
-        await db.Lines.Select(l => new LineDto(l.Id, l.Code, l.Name, l.Color, l.IsActive)).ToListAsync();
+        await db.Lines.OrderBy(l => l.Id).Select(l => new LineDto(l.Id, l.Code, l.Name, l.Color, l.IsActive)).ToListAsync();
 
     public async Task<LineDto?> GetByIdAsync(int id) =>
         await db.Lines.Where(l => l.Id == id).Select(l => new LineDto(l.Id, l.Code, l.Name, l.Color, l.IsActive)).FirstOrDefaultAsync();
