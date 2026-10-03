@@ -1,0 +1,31 @@
+# Build outputs
+**/bin/
+**/obj/
+**/dist/
+**/node_modules/
+
+# Secrets — NEVER commit these
+appsettings.Development.json
+appsettings.Production.json
+*.pfx
+*.key
+.env
+.env.local
+.env.production
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs
+*.log
+logs/
+
+# EF migrations snapshot (optional — remove if you want to track)
+# **/Migrations/
+
+# OS
+.DS_Store
+Thumbs.db

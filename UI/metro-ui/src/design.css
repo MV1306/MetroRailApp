@@ -1,0 +1,263 @@
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --primary: #1565c0;
+  --primary-dark: #0d47a1;
+  --primary-light: #1976d2;
+  --accent: #0288d1;
+  --surface: #ffffff;
+  --surface-2: #f4f7ff;
+  --border: #e8edf8;
+  --text: #1a237e;
+  --text-secondary: #64748b;
+  --success: #00897b;
+  --warning: #f57c00;
+  --danger: #e53935;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 8px rgba(21,101,192,0.08);
+  --shadow-md: 0 4px 20px rgba(21,101,192,0.12);
+  --shadow-lg: 0 12px 40px rgba(21,101,192,0.18);
+  --shadow-xl: 0 24px 64px rgba(21,101,192,0.22);
+  --bottom-nav-height: 64px;
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+/* ── Page wrapper ──────────────────────────────────────────── */
+.page-bg {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #eef2ff 0%, #f0f7ff 50%, #e8f4fd 100%);
+  padding-bottom: 0;
+}
+
+/* On mobile add bottom padding so content isn't hidden behind bottom nav */
+@media (max-width: 768px) {
+  .page-bg { padding-bottom: var(--bottom-nav-height); }
+}
+
+/* ── Glass card ────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Hover lift (disabled on touch) ───────────────────────── */
+.hover-lift {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+/* ── Gradient text ─────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #1565c0, #0288d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Page header band ──────────────────────────────────────── */
+.page-header {
+  background: linear-gradient(135deg, #0d47a1 0%, #1565c0 45%, #0288d1 100%);
+  padding: 40px 24px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 32px;
+  background: linear-gradient(160deg, #eef2ff 0%, #f0f7ff 50%, #e8f4fd 100%);
+  border-radius: 32px 32px 0 0;
+}
+@media (max-width: 768px) {
+  .page-header { padding: 24px 16px 36px; }
+  .page-header::after { height: 20px; }
+}
+
+/* ── Route timeline ────────────────────────────────────────── */
+.route-step { display: flex; gap: 12px; }
+.route-spine { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+.route-dot { border-radius: 50%; flex-shrink: 0; z-index: 1; }
+.route-line { width: 2px; flex: 1; min-height: 20px; opacity: 0.35; }
+
+/* ── Fade-in animation ─────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease both; }
+.fade-up-1 { animation-delay: 0.05s; }
+.fade-up-2 { animation-delay: 0.10s; }
+.fade-up-3 { animation-delay: 0.15s; }
+.fade-up-4 { animation-delay: 0.20s; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5cae9; border-radius: 3px; }
+
+/* ── Input override ────────────────────────────────────────── */
+.ant-select-selector,
+.ant-input,
+.ant-input-affix-wrapper {
+  border-radius: var(--radius-sm) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── Bottom Navigation Bar ─────────────────────────────────── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--bottom-nav-height);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid #e8edf8;
+  box-shadow: 0 -4px 20px rgba(21,101,192,0.08);
+  z-index: 100;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: space-around;
+}
+@media (max-width: 768px) {
+  .bottom-nav { display: flex; }
+  .desktop-nav { display: none !important; }
+  .mobile-menu-btn { display: none !important; }
+  .top-nav-user { display: flex !important; }
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px 4px;
+  border-radius: 12px;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px; /* touch target */
+}
+.bottom-nav-item:active { background: #e8f0fe; }
+.bottom-nav-item .nav-icon { font-size: 20px; transition: transform 0.15s; }
+.bottom-nav-item.active .nav-icon { transform: scale(1.15); }
+.bottom-nav-item .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.2px; }
+
+/* ── Mobile-specific layout tweaks ────────────────────────── */
+@media (max-width: 768px) {
+  /* Larger touch targets for all buttons */
+  button, .ant-btn { min-height: 44px; }
+
+  /* Full-width cards on mobile */
+  .glass-card { border-radius: 12px; }
+
+  /* Tighter padding on mobile */
+  .mobile-px { padding-left: 12px !important; padding-right: 12px !important; }
+
+  /* Stack stats horizontally with scroll */
+  .stats-row { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Route card stats — smaller font */
+  .route-stat-value { font-size: 18px !important; }
+
+  /* Ant Design table — hide less important columns */
+  .ant-table-cell { padding: 8px 10px !important; font-size: 13px !important; }
+
+  /* Drawer full width on mobile */
+  .ant-drawer-content-wrapper { width: 100% !important; }
+
+  /* Modal full screen on mobile */
+  .ant-modal { margin: 0 !important; max-width: 100vw !important; top: 0 !important; }
+  .ant-modal-content { border-radius: 0 0 16px 16px !important; }
+
+  /* Select dropdown larger touch targets */
+  .ant-select-item { padding: 10px 12px !important; font-size: 15px !important; }
+
+  /* Form items more spacing */
+  .ant-form-item { margin-bottom: 16px !important; }
+}
+
+/* ── Tablet tweaks ─────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page-header { padding: 32px 20px 44px; }
+}
+
+/* ── Safe area for notched phones ─────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  }
+  @media (max-width: 768px) {
+    .page-bg {
+      padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* ── Admin responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Tables — horizontal scroll */
+  .ant-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ant-table { min-width: 500px; }
+
+  /* Modal full screen */
+  .ant-modal-wrap .ant-modal {
+    margin: 0 !important;
+    max-width: 100vw !important;
+    top: 0 !important;
+    padding: 0 !important;
+  }
+  .ant-modal-content {
+    border-radius: 0 !important;
+    min-height: 100vh;
+  }
+
+  /* Form items stack */
+  .ant-form .ant-space {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .ant-form .ant-space .ant-space-item {
+    width: 100% !important;
+  }
+
+  /* Buttons full width in modals */
+  .ant-modal-footer { padding: 12px 16px; }
+
+  /* Tags wrap */
+  .ant-space-wrap { flex-wrap: wrap !important; }
+
+  /* Stat cards smaller */
+  .ant-statistic-content-value { font-size: 20px !important; }
+}
+
+/* ── Autofill override ─────────────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MetroRailApp.API/MetroRailApp.API.csproj" />
+  <Project Path="MetroRailApp.Core/MetroRailApp.Core.csproj" />
+  <Project Path="MetroRailApp.Infrastructure/MetroRailApp.Infrastructure.csproj" />
+  <Project Path="MetroRailApp.Services/MetroRailApp.Services.csproj" />
+</Solution>
