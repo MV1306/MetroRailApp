@@ -2,12 +2,19 @@ using MetroRailApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using MetroRailApp.Core.Entities;
 
-const string sqlServerConn = "Server=localhost;Database=MetroRailDbNew;Trusted_Connection=True;TrustServerCertificate=True;";
-const string postgresDevConn  = "Host=localhost;Port=5432;Database=MetroRailDB;Username=postgres;Password=welcome3#";
-const string postgresProdConn = "Host=db.yaymiypyulvlmswhnnfs.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=[YOUR-PASSWORD];SSL Mode=Require;Trust Server Certificate=true";
+const string sqlServerConn  = "Server=localhost;Database=MetroRailDbNew;Trusted_Connection=True;TrustServerCertificate=True;";
+const string postgresDevConn = "Host=localhost;Port=5432;Database=MetroRailDB;Username=postgres;Password=welcome3#";
 
 var targetEnv = args.FirstOrDefault() ?? "DEV";
-var postgresConn = targetEnv == "PROD" ? postgresProdConn : postgresDevConn;
+var postgresConn = postgresDevConn;
+
+if (targetEnv == "PROD")
+{
+    var password = args.ElementAtOrDefault(1)
+        ?? throw new InvalidOperationException("Usage: dotnet run -- PROD <supabase-password>");
+    postgresConn = $"Host=db.yaymiypyulvlmswhnnfs.supabase.co;Port=5432;Database=postgres;Username=postgres;Password={password};SSL Mode=Require;Trust Server Certificate=true;Search Path=public";
+}
+
 Console.WriteLine($"Target environment: {targetEnv}");
 
 var sqlOpts = new DbContextOptionsBuilder<AppDbContext>()
