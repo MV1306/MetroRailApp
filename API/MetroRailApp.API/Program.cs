@@ -14,8 +14,19 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Database ────────────────────────────────────────────────
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+var appEnv = builder.Configuration["AppEnvironment"] ?? "DEV";
+var connString = appEnv == "PROD"
+    ? builder.Configuration.GetConnectionString("ProdConnection")
+    : builder.Configuration.GetConnectionString("DevConnection");
+
+if (string.IsNullOrWhiteSpace(connString))
+    throw new InvalidOperationException($"Connection string for environment '{appEnv}' is not configured.");
+
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
+
+builder.Logging.AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",
+    appEnv == "DEV" ? LogLevel.Information : LogLevel.Warning);
 
 // ── Identity ────────────────────────────────────────────────
 builder.Services.AddIdentity<AppUser, IdentityRole>(opt =>

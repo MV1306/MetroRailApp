@@ -3,7 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using MetroRailApp.Core.Entities;
 
 const string sqlServerConn = "Server=localhost;Database=MetroRailDbNew;Trusted_Connection=True;TrustServerCertificate=True;";
-const string postgresConn  = "Host=localhost;Port=5432;Database=MetroRailDB;Username=postgres;Password=welcome3#";
+const string postgresDevConn  = "Host=localhost;Port=5432;Database=MetroRailDB;Username=postgres;Password=welcome3#";
+const string postgresProdConn = "Host=db.yaymiypyulvlmswhnnfs.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=[YOUR-PASSWORD];SSL Mode=Require;Trust Server Certificate=true";
+
+var targetEnv = args.FirstOrDefault() ?? "DEV";
+var postgresConn = targetEnv == "PROD" ? postgresProdConn : postgresDevConn;
+Console.WriteLine($"Target environment: {targetEnv}");
 
 var sqlOpts = new DbContextOptionsBuilder<AppDbContext>()
     .UseSqlServer(sqlServerConn).Options;
