@@ -71,12 +71,12 @@ public class TimetableService(AppDbContext db) : ITimetableService
 
 public class LiveTrainService(AppDbContext db) : ILiveTrainService
 {
-    // Parse "HH:mm" into today's DateTime
+    // Parse "HH:mm" into today's DateTime (UTC)
     private static DateTime Today(string hhmm)
     {
         var parts = hhmm.Split(':');
-        var now = DateTime.Now;
-        return new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0);
+        var now = DateTime.UtcNow;
+        return DateTime.SpecifyKind(new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0), DateTimeKind.Utc);
     }
 
     // Generate all departure times from terminal for a timetable entry
@@ -102,8 +102,8 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
     private static DateTime ToDay(string hhmm)
     {
         var parts = hhmm.Split(':');
-        var now = DateTime.Now;
-        return new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0);
+        var now = DateTime.UtcNow;
+        return DateTime.SpecifyKind(new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0), DateTimeKind.Utc);
     }
 
     // Build ordered station list with cumulative travel times from terminal
@@ -135,7 +135,7 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
 
     public async Task<StationLiveDto> GetNextDeparturesAsync(int stationId, int count = 5, int? toStationId = null)
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var dayType = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
             ? DayType.Weekend : DayType.Weekday;
 
@@ -231,7 +231,7 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
 
     public async Task<LineLiveDto> GetActiveTrainsAsync(int lineId)
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var dayType = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
             ? DayType.Weekend : DayType.Weekday;
 

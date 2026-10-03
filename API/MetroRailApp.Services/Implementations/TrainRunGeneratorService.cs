@@ -17,8 +17,8 @@ public class TrainRunGeneratorService(IServiceScopeFactory scopeFactory, ILogger
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            // wait until next midnight
-            var now = DateTime.Now;
+            // wait until next midnight UTC
+            var now = DateTime.UtcNow;
             var nextMidnight = now.Date.AddDays(1);
             var delay = nextMidnight - now;
             await Task.Delay(delay, stoppingToken);
@@ -33,7 +33,7 @@ public class TrainRunGeneratorService(IServiceScopeFactory scopeFactory, ILogger
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var today = DateTime.Today;
+            var today = DateTime.UtcNow.Date;
             var dayType = today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
                 ? DayType.Weekend : DayType.Weekday;
 
@@ -53,10 +53,10 @@ public class TrainRunGeneratorService(IServiceScopeFactory scopeFactory, ILogger
 
             foreach (var t in timetables)
             {
-                var first = ToDateTime(today, t.FirstDeparture);
-                var last = ToDateTime(today, t.LastDeparture);
+                var first = ToDateTimeUtc(today, t.FirstDeparture);
+                var last = ToDateTimeUtc(today, t.LastDeparture);
                 var peakWindows = t.PeakWindows
-                    .Select(p => (Start: ToDateTime(today, p.Start), End: ToDateTime(today, p.End)))
+                    .Select(p => (Start: ToDateTimeUtc(today, p.Start), End: ToDateTimeUtc(today, p.End)))
                     .ToList();
                 var current = first;
 
@@ -83,9 +83,11 @@ public class TrainRunGeneratorService(IServiceScopeFactory scopeFactory, ILogger
         }
     }
 
-    private static DateTime ToDateTime(DateTime date, string hhmm)
+    private static DateTime ToDateTimeUtc(DateTime date, string hhmm)
     {
         var parts = hhmm.Split(':');
-        return new DateTime(date.Year, date.Month, date.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0);
+        return DateTime.SpecifyKind(
+            new DateTime(date.Year, date.Month, date.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0),
+            DateTimeKind.Utc);
     }
 }
