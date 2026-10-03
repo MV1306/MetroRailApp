@@ -95,7 +95,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
         builder.Entity<StationGate>()
             .Property(g => g.Accessibles)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => string.IsNullOrWhiteSpace(v) ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
@@ -106,7 +106,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
         builder.Entity<LineTimetable>()
             .Property(t => t.PeakWindows)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => string.IsNullOrWhiteSpace(v) ? new List<MetroRailApp.Core.Entities.PeakWindow>() : System.Text.Json.JsonSerializer.Deserialize<List<MetroRailApp.Core.Entities.PeakWindow>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<MetroRailApp.Core.Entities.PeakWindow>())
