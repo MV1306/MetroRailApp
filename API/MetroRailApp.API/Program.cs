@@ -92,7 +92,7 @@ builder.Services.AddRateLimiter(opt =>
 
 // ── CORS ─────────────────────────────────────────────────────
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:5173"];
+    ?? ["http://localhost:5173","https://metro-rail-app-beta.vercel.app"];
 
 builder.Services.AddCors(opt => opt.AddPolicy("AllowReact", p =>
     p.WithOrigins(allowedOrigins)
