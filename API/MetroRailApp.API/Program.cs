@@ -14,8 +14,8 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Database ────────────────────────────────────────────────
-var appEnv = builder.Configuration["AppEnvironment"] ?? "DEV";
-var connString = appEnv == "PROD"
+var appEnv = builder.Configuration["Environment"] ?? "D";
+var connString = appEnv == "P"
     ? builder.Configuration.GetConnectionString("ProdConnection")
     : builder.Configuration.GetConnectionString("DevConnection");
 
@@ -26,7 +26,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
 
 builder.Logging.AddConsole();
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",
-    appEnv == "DEV" ? LogLevel.Information : LogLevel.Warning);
+    appEnv == "D" ? LogLevel.Information : LogLevel.Warning);
 
 // ── Identity ────────────────────────────────────────────────
 builder.Services.AddIdentity<AppUser, IdentityRole>(opt =>

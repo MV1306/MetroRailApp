@@ -1,19 +1,19 @@
 using MetroRailApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using MetroRailApp.Core.Entities;
+using Microsoft.Extensions.Configuration;
 
-const string sqlServerConn  = "Server=localhost;Database=MetroRailDbNew;Trusted_Connection=True;TrustServerCertificate=True;";
-const string postgresDevConn = "Host=localhost;Port=5432;Database=MetroRailDB;Username=postgres;Password=welcome3#";
+var config = new ConfigurationBuilder()
+    .SetBasePath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "MetroRailApp.API"))
+    .AddJsonFile("appsettings.json", optional: false)
+    .Build();
 
-var targetEnv = args.FirstOrDefault() ?? "DEV";
-var postgresConn = postgresDevConn;
+const string sqlServerConn = "Server=localhost;Database=MetroRailDbNew;Trusted_Connection=True;TrustServerCertificate=True;";
 
-if (targetEnv == "PROD")
-{
-    var password = args.ElementAtOrDefault(1)
-        ?? throw new InvalidOperationException("Usage: dotnet run -- PROD <supabase-password>");
-    postgresConn = $"Host=db.yaymiypyulvlmswhnnfs.supabase.co;Port=5432;Database=postgres;Username=postgres;Password={password};SSL Mode=Require;Trust Server Certificate=true;Search Path=public";
-}
+var targetEnv = args.FirstOrDefault() ?? config["Environment"] ?? "D";
+var connKey = targetEnv == "P" ? "ProdConnection" : "DevConnection";
+var postgresConn = config.GetConnectionString(connKey)
+    ?? throw new InvalidOperationException($"Connection string '{connKey}' not found in appsettings.json.");
 
 Console.WriteLine($"Target environment: {targetEnv}");
 
