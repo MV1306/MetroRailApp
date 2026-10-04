@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Input, Row, Col, Tag, Typography, Empty, Drawer, Tabs, Spin } from 'antd';
+import { Input, Row, Col, Tag, Typography, Empty, Drawer, Tabs, Spin, Segmented } from 'antd';
 import {
   SearchOutlined, CarOutlined, ArrowUpOutlined, RestOutlined,
-  ManOutlined, EnvironmentOutlined, ClockCircleOutlined,
+  ManOutlined, EnvironmentOutlined,
 } from '@ant-design/icons';
 import { metroApi } from '../../api/metro';
 import type { Line, Station, LineStation, StationDetail } from '../../types';
 import LiveDepartures from '../../components/user/LiveDepartures';
 import PlatformDepartures from '../../components/user/PlatformDepartures';
+import DestinationDepartures from '../../components/user/DestinationDepartures';
 import { toTitleCase } from '../../utils';
 
 const styleTag = document.createElement('style');
@@ -38,6 +39,7 @@ export default function StationSearch() {
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [stationDetail, setStationDetail] = useState<StationDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [trainView, setTrainView] = useState<'all' | 'platform' | 'destination'>('all');
 
   useEffect(() => {
     metroApi.getLines().then(async linesRes => {
@@ -82,6 +84,7 @@ export default function StationSearch() {
 
   const openStation = async (s: Station) => {
     setSelectedStation(s);
+    setTrainView('all');
     setStationDetail(null);
     setDetailLoading(true);
     try {
@@ -249,20 +252,32 @@ export default function StationSearch() {
         title={<span style={{ fontWeight: 700, color: '#0d47a1' }}>{toTitleCase(selectedStation?.name ?? '')}</span>}
         placement="right" width={420}
         open={!!selectedStation}
-        onClose={() => { setSelectedStation(null); setStationDetail(null); }}>
+        onClose={() => { setSelectedStation(null); setStationDetail(null); setTrainView('all'); }}>
         {detailLoading ? (
           <div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>
         ) : selectedStation && (
           <Tabs items={[
             {
-              key: 'live',
-              label: <span><ClockCircleOutlined /> All Trains</span>,
-              children: <LiveDepartures stationId={selectedStation.id} stationName={selectedStation.name} />,
-            },
-            {
-              key: 'platform',
-              label: <span>🚉 By Platform</span>,
-              children: <PlatformDepartures stationId={selectedStation.id} stationName={selectedStation.name} />,
+              key: 'trains',
+              label: <span>🚆 Trains</span>,
+              children: (
+                <div>
+                  <Segmented
+                    block
+                    value={trainView}
+                    onChange={v => setTrainView(v as 'all' | 'platform' | 'destination')}
+                    options={[
+                      { label: 'All', value: 'all' },
+                      { label: 'Platform', value: 'platform' },
+                      { label: 'Destination', value: 'destination' },
+                    ]}
+                    style={{ marginBottom: 16 }}
+                  />
+                  {trainView === 'all' && <LiveDepartures stationId={selectedStation.id} stationName={selectedStation.name} />}
+                  {trainView === 'platform' && <PlatformDepartures stationId={selectedStation.id} stationName={selectedStation.name} />}
+                  {trainView === 'destination' && <DestinationDepartures stationId={selectedStation.id} lines={stationDetail?.lines ?? []} />}
+                </div>
+              ),
             },
             {
               key: 'gates',
