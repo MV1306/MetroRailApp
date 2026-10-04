@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Input, Row, Col, Typography, Empty, Drawer, Tabs, Spin } from 'antd';
+import { Input, Row, Col, Tag, Typography, Empty, Drawer, Tabs, Spin } from 'antd';
 import {
   SearchOutlined, CarOutlined, ArrowUpOutlined, RestOutlined,
   ManOutlined, EnvironmentOutlined, ClockCircleOutlined,
@@ -17,21 +17,6 @@ styleTag.textContent = `
   .station-card .ant-card-body { background: transparent !important; }
 `;
 document.head.appendChild(styleTag);
-
-function toHex(color: string): string {
-  if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
-  const ctx = document.createElement('canvas').getContext('2d')!;
-  ctx.fillStyle = color;
-  return ctx.fillStyle;
-}
-
-function lineGradient(colors: string[]): string {
-  if (colors.length === 0) return '#f8f9ff';
-  const hexes = colors.map(toHex);
-  if (hexes.length === 1) return hexes[0] + '40';
-  const stops = hexes.map((c, i) => `${c}40 ${(i / (hexes.length - 1)) * 100}%`);
-  return `linear-gradient(135deg, ${stops.join(', ')})`;
-}
 
 const FACILITIES = [
   { key: 'hasParking',   icon: <CarOutlined />,     label: 'Parking',    color: '#1677ff' },
