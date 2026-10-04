@@ -71,13 +71,8 @@ public class TimetableService(AppDbContext db) : ITimetableService
 
 public class LiveTrainService(AppDbContext db) : ILiveTrainService
 {
-    // Parse "HH:mm" into today's DateTime (UTC)
-    private static DateTime Today(string hhmm)
-    {
-        var parts = hhmm.Split(':');
-        var now = DateTime.UtcNow;
-        return DateTime.SpecifyKind(new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0), DateTimeKind.Utc);
-    }
+    private static readonly TimeZoneInfo Ist = TimeZoneInfo.FindSystemTimeZoneById("Asia/Kolkata");
+    private static DateTime NowIst() => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Ist);
 
     // Generate all departure times from terminal for a timetable entry
     private static List<DateTime> GenerateDepartures(LineTimetable t)
@@ -102,8 +97,8 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
     private static DateTime ToDay(string hhmm)
     {
         var parts = hhmm.Split(':');
-        var now = DateTime.UtcNow;
-        return DateTime.SpecifyKind(new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0), DateTimeKind.Utc);
+        var now = NowIst();
+        return new DateTime(now.Year, now.Month, now.Day, int.Parse(parts[0]), int.Parse(parts[1]), 0);
     }
 
     // Build ordered station list with cumulative travel times from terminal
@@ -135,7 +130,7 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
 
     public async Task<StationLiveDto> GetNextDeparturesAsync(int stationId, int count = 5, int? toStationId = null)
     {
-        var now = DateTime.UtcNow;
+        var now = NowIst();
         var dayType = now.DayOfWeek switch
         {
             DayOfWeek.Saturday => DayType.Saturday,
@@ -235,7 +230,7 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
 
     public async Task<LineLiveDto> GetActiveTrainsAsync(int lineId)
     {
-        var now = DateTime.UtcNow;
+        var now = NowIst();
         var dayType = now.DayOfWeek switch
         {
             DayOfWeek.Saturday => DayType.Saturday,
