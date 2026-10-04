@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Input, Row, Col, Card, Tag, Typography, Badge, Empty, Drawer, Tabs, Spin } from 'antd';
+import { Input, Row, Col, Typography, Empty, Drawer, Tabs, Spin } from 'antd';
 import {
   SearchOutlined, CarOutlined, ArrowUpOutlined, RestOutlined,
   ManOutlined, EnvironmentOutlined, ClockCircleOutlined,
@@ -198,42 +198,61 @@ export default function StationSearch() {
         {stations.length === 0 && <Empty description="No stations found" style={{ marginTop: 48 }} />}
 
         {/* Station Cards */}
-        <Row gutter={[16, 16]}>
+        <Row gutter={[12, 12]}>
           {stations.map(s => {
             const stationLines = lineMap[s.id] ?? [];
             const colors = stationLines.map(l => l.color);
             const isInterchange = stationLines.length > 1;
             const activeFacilities = FACILITIES.filter(f => s[f.key as keyof Station]);
+            const accentColor = isInterchange ? '#722ed1' : (colors[0] ?? '#1565c0');
             return (
               <Col xs={24} sm={12} md={8} key={s.id}>
-                <Badge.Ribbon text={isInterchange ? 'Interchange' : toTitleCase(stationLines[0]?.name ?? '')} color={isInterchange ? '#722ed1' : (colors[0] ?? '#1677ff')}>
-                  <Card className="station-card" onClick={() => openStation(s)}
-                    style={{ borderRadius: 14, cursor: 'pointer', background: lineGradient(colors), border: `2px solid ${colors[0] ? toHex(colors[0]) + '99' : '#e8e8e8'}`, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', height: '100%' }}
-                    styles={{ body: { padding: 16, background: lineGradient(colors), borderRadius: '0 0 14px 14px' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                      <div style={{ flex: 1, paddingRight: 8 }}>
-                        <Typography.Text strong style={{ fontSize: 14, lineHeight: 1.3, display: 'block' }}>{toTitleCase(s.name)}</Typography.Text>
-                        <Typography.Text type="secondary" style={{ fontSize: 11 }}><EnvironmentOutlined style={{ marginRight: 3 }} />{s.code}</Typography.Text>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-                        {stationLines.map(l => <span key={l.id} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: l.color, boxShadow: `0 0 0 2px ${l.color}44` }} />)}
-                      </div>
+                <div onClick={() => openStation(s)} className="station-card" style={{
+                  background: '#fff', borderRadius: 12, cursor: 'pointer',
+                  border: '1px solid #e8edf5',
+                  borderLeft: `4px solid ${accentColor}`,
+                  boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
+                  padding: '14px 16px',
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  {/* Top row: name + interchange badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Typography.Text strong style={{ fontSize: 14, display: 'block', lineHeight: 1.4 }}>
+                        {toTitleCase(s.name)}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                        <EnvironmentOutlined style={{ marginRight: 3 }} />{s.code}
+                      </Typography.Text>
                     </div>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
-                      {stationLines.map(l => <Tag key={l.id} style={{ background: l.color + '22', border: `1px solid ${l.color}`, color: l.color, fontWeight: 600, fontSize: 11, borderRadius: 6 }}>{toTitleCase(l.name)}</Tag>)}
+                    {isInterchange && (
+                      <span style={{ background: '#f3e8ff', color: '#722ed1', border: '1px solid #d3adf7', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                        Interchange
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Line pills */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {stationLines.map(l => (
+                      <span key={l.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: l.color + '15', border: `1px solid ${l.color}55`, color: l.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: l.color, flexShrink: 0 }} />
+                        {toTitleCase(l.name)}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Facilities */}
+                  {activeFacilities.length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 4, borderTop: '1px solid #f0f4f8' }}>
+                      {activeFacilities.map(f => (
+                        <span key={f.key} title={f.label} style={{ color: f.color, fontSize: 14 }}>
+                          {f.icon}
+                        </span>
+                      ))}
                     </div>
-                    <div style={{ height: 1, background: colors[0] ? colors[0] + '33' : '#f0f0f0', marginBottom: 10 }} />
-                    {activeFacilities.length > 0 ? (
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {activeFacilities.map(f => (
-                          <span key={f.key} title={f.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: f.color + '18', border: `1px solid ${f.color}44`, color: f.color, borderRadius: 6, padding: '2px 7px', fontSize: 11 }}>
-                            {f.icon} {f.label}
-                          </span>
-                        ))}
-                      </div>
-                    ) : <Typography.Text type="secondary" style={{ fontSize: 11 }}>No facilities listed</Typography.Text>}
-                  </Card>
-                </Badge.Ribbon>
+                  )}
+                </div>
               </Col>
             );
           })}

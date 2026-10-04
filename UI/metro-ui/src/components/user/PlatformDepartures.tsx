@@ -45,10 +45,9 @@ export default function PlatformDepartures({ stationId, stationName }: Props) {
 
   if (loading) return <div style={{ textAlign: 'center', padding: 32 }}><Spin /></div>;
 
-  const byPlatform = departures.reduce<Record<string, NextDeparture[]>>((acc, d) => {
+  const byPlatform = departures.reduce<Record<string, NextDeparture>>((acc, d) => {
     const pf = d.platformNumber || '—';
-    if (!acc[pf]) acc[pf] = [];
-    acc[pf].push(d);
+    if (!acc[pf]) acc[pf] = d; // only keep the first (next) train per platform
     return acc;
   }, {});
 
@@ -76,63 +75,44 @@ export default function PlatformDepartures({ stationId, stationName }: Props) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {platforms.map(pf => {
-            const trains = byPlatform[pf];
-            const lineColor = trains[0]?.lineColor ?? '#1565c0';
+            const d = byPlatform[pf];
+            const lineColor = d.lineColor ?? '#1565c0';
+            const liveMin = getLiveMinutes(d.departureInMinutes);
+            const liveSec = getLiveSeconds(d.departureInMinutes);
+            const isDue = liveMin === 0;
+            const isUrgent = liveMin <= 2;
+            const isWarning = liveMin <= 5 && !isUrgent;
+            const timeBg = isDue || isUrgent ? '#ff4d4f' : isWarning ? '#fa8c16' : '#52c41a';
             return (
               <div key={pf} style={{ borderRadius: 12, overflow: 'hidden', border: `1.5px solid ${lineColor}44`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                {/* Platform header */}
                 <div style={{ background: lineColor, padding: '7px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 6, padding: '2px 10px' }}>
-                    <Typography.Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>
-                      PF {pf}
-                    </Typography.Text>
+                    <Typography.Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>PF {pf}</Typography.Text>
                   </div>
                   <Typography.Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12 }}>
-                    {toTitleCase(trains[0]?.lineName ?? '')}
+                    {toTitleCase(d.lineName)}
                   </Typography.Text>
                 </div>
-
-                {/* Train rows */}
-                <div style={{ background: '#fff' }}>
-                  {trains.map((d, i) => {
-                    const liveMin = getLiveMinutes(d.departureInMinutes);
-                    const liveSec = getLiveSeconds(d.departureInMinutes);
-                    const isDue = liveMin === 0;
-                    const isUrgent = liveMin <= 2;
-                    const isWarning = liveMin <= 5 && !isUrgent;
-                    const timeBg = isDue || isUrgent ? '#ff4d4f' : isWarning ? '#fa8c16' : '#52c41a';
-
-                    return (
-                      <div key={i} style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        borderTop: i > 0 ? `1px solid ${lineColor}22` : undefined,
-                        background: i % 2 === 0 ? '#fff' : `${lineColor}06`,
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: lineColor, flexShrink: 0 }} />
-                          <div style={{ minWidth: 0 }}>
-                            <Typography.Text strong style={{ fontSize: 13, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {toTitleCase(d.towardsTerminal)}
-                            </Typography.Text>
-                            <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                              {d.departureTime}
-                            </Typography.Text>
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'center', flexShrink: 0, marginLeft: 12 }}>
-                          <div style={{ background: timeBg, color: '#fff', borderRadius: 8, padding: '4px 10px', fontWeight: 700, fontSize: 13, minWidth: 52, textAlign: 'center' }}>
-                            {isDue ? 'Due' : `${liveMin} min`}
-                          </div>
-                          {!isDue && liveMin < 10 && (
-                            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2, textAlign: 'center' }}>
-                              {String(liveSec).padStart(2, '0')}s
-                            </div>
-                          )}
-                        </div>
+                <div style={{ background: '#fff', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: lineColor, flexShrink: 0 }} />
+                    <div style={{ minWidth: 0 }}>
+                      <Typography.Text strong style={{ fontSize: 13, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {toTitleCase(d.towardsTerminal)}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 11 }}>{d.departureTime}</Typography.Text>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center', flexShrink: 0, marginLeft: 12 }}>
+                    <div style={{ background: timeBg, color: '#fff', borderRadius: 8, padding: '4px 10px', fontWeight: 700, fontSize: 13, minWidth: 52, textAlign: 'center' }}>
+                      {isDue ? 'Due' : `${liveMin} min`}
+                    </div>
+                    {!isDue && liveMin < 10 && (
+                      <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2, textAlign: 'center' }}>
+                        {String(liveSec).padStart(2, '0')}s
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
               </div>
             );
