@@ -9,12 +9,12 @@ import {
 } from '@ant-design/icons';
 
 const NAV = [
-  { key: '/',         label: 'Home',     icon: <HomeOutlined /> },
-  { key: '/journey',  label: 'Journey',  icon: <CompassOutlined /> },
-  { key: '/stations', label: 'Stations', icon: <EnvironmentOutlined /> },
-  { key: '/fare',     label: 'Fare',     icon: <DollarOutlined /> },
-  { key: '/map',      label: 'Map',      icon: <GlobalOutlined /> },
-  { key: '/tickets',  label: 'Tickets',  icon: <TagsOutlined /> },
+  { key: '/',         label: 'Home',     icon: <HomeOutlined />,        adminHidden: false },
+  { key: '/journey',  label: 'Journey',  icon: <CompassOutlined />,     adminHidden: true },
+  { key: '/stations', label: 'Stations', icon: <EnvironmentOutlined />, adminHidden: false },
+  { key: '/fare',     label: 'Fare',     icon: <DollarOutlined />,      adminHidden: false },
+  { key: '/map',      label: 'Map',      icon: <GlobalOutlined />,      adminHidden: false },
+  { key: '/tickets',  label: 'Tickets',  icon: <TagsOutlined />,        adminHidden: true },
 ];
 
 export function Navbar() {
@@ -71,7 +71,7 @@ export function Navbar() {
 
         {/* Desktop nav links */}
         <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {NAV.map(item => {
+          {NAV.filter(item => !(isAdmin && item.adminHidden)).map(item => {
             const active = isActive(item.key);
             return (
               <button key={item.key} onClick={() => navigate(item.key)}
@@ -108,7 +108,7 @@ export function Navbar() {
 
       {/* ── Bottom tab bar (mobile only) ─────────────────────── */}
       <div className="bottom-nav">
-        {NAV.map(item => {
+        {NAV.filter(item => !(isAdmin && item.adminHidden)).map(item => {
           const active = isActive(item.key);
           return (
             <button key={item.key} className={`bottom-nav-item${active ? ' active' : ''}`}

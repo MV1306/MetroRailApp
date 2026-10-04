@@ -48,12 +48,12 @@ export default function App() {
                   <Route path="tickets" element={<TicketValidationPage />} />
                 </Route>
 
-                <Route path="/journey" element={<JourneyPlanner />} />
+                <Route path="/journey" element={<ProtectedRoute userOnly><JourneyPlanner /></ProtectedRoute>} />
                 <Route path="/stations" element={<StationSearch />} />
                 <Route path="/fare" element={<FareCalculator />} />
                 <Route path="/map" element={<MetroMap />} />
-                <Route path="/tickets" element={<ProtectedRoute><TicketBooking /></ProtectedRoute>} />
-                <Route path="/mfa-setup" element={<ProtectedRoute><MfaSetupPage /></ProtectedRoute>} />
+                <Route path="/tickets" element={<ProtectedRoute userOnly><TicketBooking /></ProtectedRoute>} />
+                <Route path="/mfa-setup" element={<ProtectedRoute userOnly><MfaSetupPage /></ProtectedRoute>} />
               </Routes>
             </div>
           </div>
