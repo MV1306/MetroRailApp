@@ -171,11 +171,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 // ── Swagger (dev only) ───────────────────────────────────────
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 // ── Security headers ─────────────────────────────────────────
 app.Use(async (ctx, next) =>
