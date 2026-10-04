@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Select, Typography, Tag, Spin, Empty, Tabs } from 'antd';
+import { Typography, Tag, Spin, Empty, Tabs } from 'antd';
 import {
   ClockCircleOutlined, ThunderboltOutlined, FieldTimeOutlined,
 } from '@ant-design/icons';

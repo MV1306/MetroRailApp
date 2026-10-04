@@ -13,7 +13,7 @@ import ConnectionsPage from './pages/admin/ConnectionsPage';
 import InterchangesPage from './pages/admin/InterchangesPage';
 import FaresPage from './pages/admin/FaresPage';
 import StationFacilitiesPage from './pages/admin/StationFacilitiesPage';
-import TimetablePage from './pages/admin/TimetablePage';
+import AdminTimetablePage from './pages/admin/TimetablePage';
 import TicketValidationPage from './pages/admin/TicketValidationPage';
 import JourneyPlanner from './pages/user/JourneyPlanner';
 import StationSearch from './pages/user/StationSearch';
@@ -46,7 +46,7 @@ export default function App() {
                   <Route path="interchanges" element={<InterchangesPage />} />
                   <Route path="fares" element={<FaresPage />} />
                   <Route path="facilities" element={<StationFacilitiesPage />} />
-                  <Route path="timetable" element={<TimetablePage />} />
+                  <Route path="timetable" element={<AdminTimetablePage />} />
                   <Route path="tickets" element={<TicketValidationPage />} />
                 </Route>
 
