@@ -7,6 +7,7 @@ import {
 import { metroApi } from '../../api/metro';
 import type { Line, Station, LineStation, StationDetail } from '../../types';
 import LiveDepartures from '../../components/user/LiveDepartures';
+import PlatformDepartures from '../../components/user/PlatformDepartures';
 import { toTitleCase } from '../../utils';
 
 const styleTag = document.createElement('style');
@@ -251,8 +252,13 @@ export default function StationSearch() {
           <Tabs items={[
             {
               key: 'live',
-              label: <span><ClockCircleOutlined /> Live</span>,
+              label: <span><ClockCircleOutlined /> All Trains</span>,
               children: <LiveDepartures stationId={selectedStation.id} stationName={selectedStation.name} />,
+            },
+            {
+              key: 'platform',
+              label: <span>🚉 By Platform</span>,
+              children: <PlatformDepartures stationId={selectedStation.id} stationName={selectedStation.name} />,
             },
             {
               key: 'gates',
