@@ -203,8 +203,16 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
             var terminalStation = timeline.Last();
             var platform = platforms.FirstOrDefault(p =>
                 p.LineId == timetable.LineId &&
-                p.TowardsDestination == terminalStation.StationName);
-            platform ??= platforms.FirstOrDefault(p => p.LineId == timetable.LineId);
+                p.TowardsDestination.Equals(terminalStation.StationName, StringComparison.OrdinalIgnoreCase));
+            platform ??= platforms.FirstOrDefault(p =>
+                p.LineId == timetable.LineId &&
+                terminalStation.StationName.Contains(p.TowardsDestination, StringComparison.OrdinalIgnoreCase));
+            platform ??= platforms.FirstOrDefault(p =>
+                p.LineId == timetable.LineId &&
+                p.TowardsDestination.Split(' ').Any(w => terminalStation.StationName.Contains(w, StringComparison.OrdinalIgnoreCase) && w.Length > 3));
+            platform ??= platforms.Where(p => p.LineId == timetable.LineId)
+                .OrderBy(p => p.Id)
+                .ElementAtOrDefault(timetable.Direction == TrainDirection.Forward ? 0 : 1);
 
             foreach (var dep in GenerateDepartures(timetable))
             {
