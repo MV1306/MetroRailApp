@@ -53,7 +53,7 @@ export default function LiveDepartures({ stationId, stationName }: Props) {
 
   if (loading) return <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>;
 
-  const isLastTrain = (d: NextDeparture, idx: number) =>
+  const isLastTrain = (_: NextDeparture, idx: number) =>
     idx === departures.length - 1 && departures.length < 3;
 
   return (
