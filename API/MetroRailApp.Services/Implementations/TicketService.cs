@@ -88,6 +88,45 @@ public class TicketService(AppDbContext db, IFareService fareService) : ITicketS
         return ToDto(ticket);
     }
 
+    public async Task<TicketDto> CancelAsync(string userId, int ticketId)
+    {
+        var ticket = await db.Tickets
+            .Include(t => t.FromStation)
+            .Include(t => t.ToStation)
+            .FirstOrDefaultAsync(t => t.Id == ticketId && t.UserId == userId)
+            ?? throw new KeyNotFoundException("Ticket not found.");
+
+        if (ticket.Status != TicketStatus.Active)
+            throw new InvalidOperationException("Only active tickets can be cancelled.");
+
+        ticket.Status = TicketStatus.Expired;
+        await db.SaveChangesAsync();
+        return ToDto(ticket);
+    }
+
+    public async Task<JourneyStatsDto> GetStatsAsync(string userId)
+    {
+        var tickets = await db.Tickets
+            .Include(t => t.FromStation)
+            .Include(t => t.ToStation)
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
+
+        var totalTrips = tickets.Count;
+        var totalDistance = Math.Round(tickets.Sum(t => t.DistanceKm * t.Passengers), 2);
+        var totalSpent = tickets.Sum(t => t.Fare * t.Passengers);
+        var active = tickets.Count(t => t.Status == TicketStatus.Active);
+
+        var stationCounts = tickets
+            .SelectMany(t => new[] { t.FromStation?.Name, t.ToStation?.Name })
+            .Where(n => n != null)
+            .GroupBy(n => n)
+            .OrderByDescending(g => g.Count())
+            .FirstOrDefault()?.Key;
+
+        return new JourneyStatsDto(totalTrips, totalDistance, totalSpent, active, stationCounts);
+    }
+
     private static TicketDto ToDto(Ticket t) => new(
         t.Id, t.TicketRef,
         t.FromStation.Name, t.ToStation.Name,

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Select, Button, Typography, Alert, Tag, Tabs, Empty, Spin, message } from 'antd';
+import { Select, Button, Typography, Alert, Tag, Tabs, Empty, Spin, message, Modal, QRCode, Popconfirm, Row, Col } from 'antd';
 import {
   ArrowRightOutlined, SwapOutlined, QrcodeOutlined,
   CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined,
+  DeleteOutlined, BarChartOutlined, EnvironmentOutlined,
+  DollarOutlined, RiseOutlined,
 } from '@ant-design/icons';
 import { metroApi } from '../../api/metro';
-import type { Station, Ticket } from '../../types';
+import type { Station, Ticket, JourneyStats } from '../../types';
 import { toTitleCase } from '../../utils';
 
 const STATUS_CONFIG = {
@@ -14,7 +16,44 @@ const STATUS_CONFIG = {
   Expired: { color: 'error',   icon: <CloseCircleOutlined /> },
 } as const;
 
-function TicketCard({ ticket }: { ticket: Ticket }) {
+function StatsPanel({ stats }: { stats: JourneyStats }) {
+  const items = [
+    { icon: <QrcodeOutlined />, value: stats.totalTrips, label: 'Total Trips', color: '#1565c0' },
+    { icon: <RiseOutlined />, value: `${stats.totalDistanceKm} km`, label: 'Distance Travelled', color: '#00897b' },
+    { icon: <DollarOutlined />, value: `₹${stats.totalSpent.toFixed(2)}`, label: 'Total Spent', color: '#f57c00' },
+    { icon: <ClockCircleOutlined />, value: stats.activeTickets, label: 'Active Tickets', color: '#6a1b9a' },
+  ];
+  return (
+    <div style={{ background: 'linear-gradient(135deg, #0d47a1, #1565c0)', borderRadius: 16, padding: '20px 24px', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <BarChartOutlined style={{ color: 'rgba(255,255,255,0.8)', fontSize: 16 }} />
+        <Typography.Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          Your Journey Stats
+        </Typography.Text>
+      </div>
+      <Row gutter={[12, 12]}>
+        {items.map((s, i) => (
+          <Col xs={12} sm={6} key={i}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: '#fff', fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 4 }}>{s.label}</div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+      {stats.mostVisitedStation && (
+        <div style={{ marginTop: 14, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <EnvironmentOutlined style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }} />
+          <Typography.Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
+            Most visited: <strong style={{ color: '#fff' }}>{toTitleCase(stats.mostVisitedStation)}</strong>
+          </Typography.Text>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TicketCard({ ticket, onCancel, onShowQr }: { ticket: Ticket; onCancel: (id: number) => void; onShowQr: (t: Ticket) => void }) {
   const cfg = STATUS_CONFIG[ticket.status];
   const validUntil = new Date(ticket.validUntil);
   const purchased  = new Date(ticket.purchasedAt);
@@ -24,15 +63,35 @@ function TicketCard({ ticket }: { ticket: Ticket }) {
   return (
     <div style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 20px rgba(21,101,192,0.08)', border: '1.5px solid #e2e8f0', marginBottom: 16 }}>
       <div style={{ background: 'linear-gradient(135deg, #0d47a1, #1565c0)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <QrcodeOutlined style={{ color: '#fff', fontSize: 18 }} />
+        <button
+          onClick={() => onShowQr(ticket)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: ticket.status === 'Active' ? 'pointer' : 'default', padding: 0 }}
+          title={ticket.status === 'Active' ? 'Show QR Code' : undefined}
+        >
+          <QrcodeOutlined style={{ color: ticket.status === 'Active' ? '#69f0ae' : 'rgba(255,255,255,0.5)', fontSize: 18 }} />
           <Typography.Text strong style={{ color: '#fff', fontSize: 15, letterSpacing: 1 }}>
             {ticket.ticketRef}
           </Typography.Text>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Tag color={cfg.color} icon={cfg.icon} style={{ borderRadius: 8, fontWeight: 600 }}>
+            {ticket.status}
+          </Tag>
+          {ticket.status === 'Active' && (
+            <Popconfirm
+              title="Cancel this ticket?"
+              description="This action cannot be undone."
+              okText="Yes, cancel"
+              okButtonProps={{ danger: true }}
+              cancelText="Keep"
+              onConfirm={() => onCancel(ticket.id)}
+            >
+              <button style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer', padding: '3px 7px', color: '#fff', display: 'flex', alignItems: 'center' }}>
+                <DeleteOutlined style={{ fontSize: 13 }} />
+              </button>
+            </Popconfirm>
+          )}
         </div>
-        <Tag color={cfg.color} icon={cfg.icon} style={{ borderRadius: 8, fontWeight: 600 }}>
-          {ticket.status}
-        </Tag>
       </div>
 
       <div style={{ padding: '16px 20px' }}>
@@ -89,22 +148,36 @@ export default function TicketBooking() {
   const [passengers, setPassengers] = useState<number>(1);
   const [farePreview, setFarePreview] = useState<number | null>(null);
   const [tickets, setTickets]     = useState<Ticket[]>([]);
+  const [stats, setStats]         = useState<JourneyStats | null>(null);
   const [loading, setLoading]     = useState(false);
   const [listLoading, setListLoading] = useState(false);
   const [error, setError]         = useState('');
-  const [, setTick]               = useState(0); // forces countdown re-render
+  const [, setTick]               = useState(0);
+  const [qrTicket, setQrTicket]   = useState<Ticket | null>(null);
   const [messageApi, ctx]         = message.useMessage();
 
   const loadTickets = async () => {
     setListLoading(true);
-    try { setTickets((await metroApi.getMyTickets()).data); }
-    catch { /* ignore */ }
+    try {
+      const [ticketsRes, statsRes] = await Promise.all([
+        metroApi.getMyTickets(),
+        metroApi.getTicketStats(),
+      ]);
+      setTickets(ticketsRes.data);
+      setStats(statsRes.data);
+    } catch { /* ignore */ }
     finally { setListLoading(false); }
   };
 
   const silentRefresh = async () => {
-    try { setTickets((await metroApi.getMyTickets()).data); }
-    catch { /* ignore */ }
+    try {
+      const [ticketsRes, statsRes] = await Promise.all([
+        metroApi.getMyTickets(),
+        metroApi.getTicketStats(),
+      ]);
+      setTickets(ticketsRes.data);
+      setStats(statsRes.data);
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
@@ -112,7 +185,6 @@ export default function TicketBooking() {
     loadTickets();
   }, []);
 
-  // Poll every 30s only while there are active tickets
   useEffect(() => {
     const hasActive = tickets.some(t => t.status === 'Active');
     if (!hasActive) return;
@@ -120,7 +192,6 @@ export default function TicketBooking() {
     return () => clearInterval(id);
   }, [tickets]);
 
-  // Tick countdown every 60s so "X min left" updates without a network call
   useEffect(() => {
     const id = setInterval(() => setTick(n => n + 1), 60_000);
     return () => clearInterval(id);
@@ -144,6 +215,16 @@ export default function TicketBooking() {
     } finally { setLoading(false); }
   };
 
+  const cancel = async (ticketId: number) => {
+    try {
+      await metroApi.cancelTicket(ticketId);
+      messageApi.success('Ticket cancelled.');
+      await loadTickets();
+    } catch (err: unknown) {
+      messageApi.error((err as any)?.response?.data?.error ?? 'Failed to cancel ticket.');
+    }
+  };
+
   const opts = stations.map(s => ({ value: s.id, label: toTitleCase(s.name) }));
   const active  = tickets.filter(t => t.status === 'Active');
   const history = tickets.filter(t => t.status !== 'Active');
@@ -151,6 +232,40 @@ export default function TicketBooking() {
   return (
     <div className="page-bg">
       {ctx}
+
+      {/* QR Modal */}
+      <Modal
+        open={!!qrTicket}
+        onCancel={() => setQrTicket(null)}
+        footer={null}
+        centered
+        title={<span style={{ color: '#0d47a1', fontWeight: 700 }}>Ticket QR Code</span>}
+      >
+        {qrTicket && (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <QRCode
+              value={qrTicket.ticketRef}
+              size={220}
+              style={{ margin: '0 auto 16px' }}
+            />
+            <Typography.Text strong style={{ fontSize: 18, letterSpacing: 2, display: 'block', marginBottom: 8 }}>
+              {qrTicket.ticketRef}
+            </Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              {toTitleCase(qrTicket.fromStationName)} → {toTitleCase(qrTicket.toStationName)}
+            </Typography.Text>
+            <div style={{ marginTop: 12 }}>
+              <Tag color="success" icon={<ClockCircleOutlined />} style={{ fontSize: 13, padding: '4px 12px' }}>
+                Valid until {new Date(qrTicket.validUntil).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </Tag>
+            </div>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 12 }}>
+              Show this QR code to the gate staff for validation
+            </Typography.Text>
+          </div>
+        )}
+      </Modal>
+
       <div className="page-header">
         <div style={{ maxWidth: 620, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <Typography.Title level={2} style={{ color: '#fff', margin: '0 0 4px', fontWeight: 800 }}>
@@ -221,6 +336,9 @@ export default function TicketBooking() {
           </Button>
         </div>
 
+        {/* Journey Stats */}
+        {stats && stats.totalTrips > 0 && <StatsPanel stats={stats} />}
+
         {/* Tickets list */}
         {listLoading ? (
           <div style={{ textAlign: 'center', padding: 40 }}><Spin size="large" /></div>
@@ -233,14 +351,14 @@ export default function TicketBooking() {
                 label: `Active (${active.length})`,
                 children: active.length === 0
                   ? <Empty description="No active tickets" style={{ padding: 32 }} />
-                  : active.map(t => <TicketCard key={t.id} ticket={t} />),
+                  : active.map(t => <TicketCard key={t.id} ticket={t} onCancel={cancel} onShowQr={setQrTicket} />),
               },
               {
                 key: 'history',
                 label: `History (${history.length})`,
                 children: history.length === 0
                   ? <Empty description="No past tickets" style={{ padding: 32 }} />
-                  : history.map(t => <TicketCard key={t.id} ticket={t} />),
+                  : history.map(t => <TicketCard key={t.id} ticket={t} onCancel={cancel} onShowQr={setQrTicket} />),
               },
             ]}
           />

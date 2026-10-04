@@ -18,7 +18,8 @@ public class MetroController(
     IFareService fareService,
     IFavouriteRouteService favouriteRouteService,
     IRecentSearchService recentSearchService,
-    ILiveTrainService liveTrainService) : ControllerBase
+    ILiveTrainService liveTrainService,
+    ITimetableService timetableService) : ControllerBase
 {
     [HttpGet("stations")]
     public async Task<IActionResult> GetStations([FromQuery] string? search) =>
@@ -88,4 +89,12 @@ public class MetroController(
         await recentSearchService.SaveAsync(userId, dto.FromStationId, dto.ToStationId);
         return Ok();
     }
+
+    [HttpGet("timetable")]
+    public async Task<IActionResult> GetTimetable() =>
+        Ok(await timetableService.GetAllAsync());
+
+    [HttpGet("timetable/line/{lineId}")]
+    public async Task<IActionResult> GetTimetableByLine(int lineId) =>
+        Ok(await timetableService.GetByLineAsync(lineId));
 }

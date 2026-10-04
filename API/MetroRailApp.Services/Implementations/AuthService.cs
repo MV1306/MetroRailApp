@@ -82,6 +82,30 @@ public class AuthService(UserManager<AppUser> userManager, IConfiguration config
         return true;
     }
 
+    public async Task<UserProfileDto?> GetProfileAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null) return null;
+        return new UserProfileDto(user.FullName, user.Email!, user.CreatedAt, user.TwoFactorEnabled);
+    }
+
+    public async Task<UserProfileDto?> UpdateProfileAsync(string userId, UpdateProfileDto dto)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null) return null;
+        user.FullName = dto.FullName;
+        await userManager.UpdateAsync(user);
+        return new UserProfileDto(user.FullName, user.Email!, user.CreatedAt, user.TwoFactorEnabled);
+    }
+
+    public async Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null) return false;
+        var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        return result.Succeeded;
+    }
+
     private string GenerateToken(AppUser user, string role)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));

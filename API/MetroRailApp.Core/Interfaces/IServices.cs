@@ -11,6 +11,9 @@ public interface IAuthService
     Task<bool> DisableMfaAsync(string userId);
     Task<bool> EnableMfaAsync(string userId, string code);
     Task<AuthResponseDto?> VerifyMfaAsync(string userId, string code);
+    Task<UserProfileDto?> GetProfileAsync(string userId);
+    Task<UserProfileDto?> UpdateProfileAsync(string userId, UpdateProfileDto dto);
+    Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto dto);
 }
 
 public interface ILineService
@@ -133,4 +136,6 @@ public interface ITicketService
     Task<List<TicketDto>> GetMyTicketsAsync(string userId);
     Task<TicketDto?> GetByRefAsync(string ticketRef);
     Task<TicketDto> ValidateAsync(string ticketRef);
+    Task<TicketDto> CancelAsync(string userId, int ticketId);
+    Task<JourneyStatsDto> GetStatsAsync(string userId);
 }

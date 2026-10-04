@@ -128,3 +128,10 @@ public record TicketDto(
     int Id, string TicketRef, string FromStationName, string ToStationName,
     decimal Fare, double DistanceKm, int Passengers, decimal TotalFare,
     DateTime PurchasedAt, DateTime ValidUntil, string Status);
+
+public record JourneyStatsDto(
+    int TotalTrips,
+    double TotalDistanceKm,
+    decimal TotalSpent,
+    int ActiveTickets,
+    string? MostVisitedStation);

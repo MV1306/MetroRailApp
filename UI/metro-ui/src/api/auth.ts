@@ -1,5 +1,5 @@
 import api from './axios';
-import type { AuthResponse } from '../types';
+import type { AuthResponse, UserProfile } from '../types';
 
 export const login = (email: string, password: string) =>
   api.post<AuthResponse>('/auth/login', { email, password });
@@ -21,3 +21,12 @@ export const getMfaSetup = () =>
 
 export const enableMfa = (code: string) =>
   api.post('/auth/mfa/enable', { code });
+
+export const getProfile = () =>
+  api.get<UserProfile>('/auth/profile');
+
+export const updateProfile = (fullName: string) =>
+  api.put<UserProfile>('/auth/profile', { fullName });
+
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  api.post('/auth/change-password', { currentPassword, newPassword });

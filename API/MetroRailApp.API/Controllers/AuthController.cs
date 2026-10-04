@@ -76,4 +76,31 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await authService.VerifyMfaAsync(userId, dto.Code);
         return result == null ? Unauthorized(new { error = "Invalid code." }) : Ok(result);
     }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await authService.GetProfileAsync(userId);
+        return result == null ? NotFound() : Ok(result);
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile(UpdateProfileDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await authService.UpdateProfileAsync(userId, dto);
+        return result == null ? NotFound() : Ok(result);
+    }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var ok = await authService.ChangePasswordAsync(userId, dto);
+        return ok ? Ok() : BadRequest(new { error = "Current password is incorrect." });
+    }
 }

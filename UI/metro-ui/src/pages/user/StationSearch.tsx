@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Input, Row, Col, Tag, Typography, Empty, Drawer, Tabs, Spin, Segmented } from 'antd';
+import { Input, Row, Col, Tag, Typography, Empty, Drawer, Tabs, Spin, Segmented, Button, Tooltip } from 'antd';
 import {
   SearchOutlined, CarOutlined, ArrowUpOutlined, RestOutlined,
-  ManOutlined, EnvironmentOutlined,
+  ManOutlined, EnvironmentOutlined, AimOutlined,
 } from '@ant-design/icons';
 import { metroApi } from '../../api/metro';
 import type { Line, Station, LineStation, StationDetail } from '../../types';
@@ -36,6 +36,7 @@ export default function StationSearch() {
   const [selectedLine, setSelectedLine] = useState<number | 'all'>('all');
   const [facilityFilter, setFacilityFilter] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [nearbyLoading, setNearbyLoading] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [stationDetail, setStationDetail] = useState<StationDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -82,8 +83,26 @@ export default function StationSearch() {
     setStations(filtered);
   }, [selectedLine, facilityFilter, allStations, lineStationMap]);
 
-  const openStation = async (s: Station) => {
-    setSelectedStation(s);
+  const findNearby = () => {
+    if (!navigator.geolocation) return;
+    setNearbyLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude, longitude } = coords;
+        const withDist = allStations.map(s => ({
+          ...s,
+          _dist: Math.sqrt((s.latitude - latitude) ** 2 + (s.longitude - longitude) ** 2),
+        }));
+        withDist.sort((a, b) => a._dist - b._dist);
+        setStations(withDist.slice(0, 6) as Station[]);
+        setNearbyLoading(false);
+      },
+      () => setNearbyLoading(false),
+      { timeout: 8000 }
+    );
+  };
+
+  const openStation = async (s: Station) => {    setSelectedStation(s);
     setTrainView('all');
     setStationDetail(null);
     setDetailLoading(true);
@@ -180,7 +199,18 @@ export default function StationSearch() {
         )}
 
         {/* Search */}
-        <Input prefix={<SearchOutlined style={{ color: '#1565c0' }} />} placeholder="Search by station name or code..." value={query} onChange={e => setQuery(e.target.value)} allowClear size="large" style={{ marginBottom: 16, borderRadius: 10, background: '#fff', boxShadow: '0 2px 8px rgba(21,101,192,0.06)' }} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <Input prefix={<SearchOutlined style={{ color: '#1565c0' }} />} placeholder="Search by station name or code..." value={query} onChange={e => setQuery(e.target.value)} allowClear size="large" style={{ borderRadius: 10, background: '#fff', boxShadow: '0 2px 8px rgba(21,101,192,0.06)' }} />
+          <Tooltip title="Find stations near me">
+            <Button
+              icon={<AimOutlined />}
+              size="large"
+              loading={nearbyLoading}
+              onClick={findNearby}
+              style={{ borderRadius: 10, height: 40, flexShrink: 0, background: '#1565c0', color: '#fff', border: 'none' }}
+            />
+          </Tooltip>
+        </div>
 
         {query && <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>{stations.length} result{stations.length !== 1 ? 's' : ''} for "{query}"</Typography.Text>}
         {stations.length === 0 && <Empty description="No stations found" style={{ marginTop: 48 }} />}

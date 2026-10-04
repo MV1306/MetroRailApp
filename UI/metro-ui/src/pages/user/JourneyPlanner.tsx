@@ -27,6 +27,7 @@ export default function JourneyPlanner() {
   const [searched, setSearched] = useState(false);
   const [departures, setDepartures] = useState<NextDeparture[]>([]);
   const [avoidInterchange, setAvoidInterchange] = useState(false);
+  const [accessibleOnly, setAccessibleOnly] = useState(false);
   const [expandedRoutes, setExpandedRoutes] = useState<Record<number, boolean>>({});
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const [searchParams] = useSearchParams();
@@ -63,7 +64,16 @@ export default function JourneyPlanner() {
     setLoading(true); setError(''); setSearched(true); setDepartures([]);
     try {
       const { data } = await metroApi.findRoutes(f, t);
-      const filtered = avoidInterchange ? data.filter(r => r.interchanges === 0) : data;
+      let filtered = avoidInterchange ? data.filter(r => r.interchanges === 0) : data;
+      if (accessibleOnly) {
+        filtered = filtered.map(r => ({
+          ...r,
+          steps: r.steps.filter((_, j) => {
+            const s = stations.find(st => st.id === r.steps[j]?.stationId);
+            return !s || s.isAccessible;
+          }),
+        })).filter(r => r.steps.length > 0);
+      }
       setRoutes(filtered);
       // expand all routes by default
       const expanded: Record<number, boolean> = {};
@@ -162,9 +172,15 @@ export default function JourneyPlanner() {
 
           {/* Options row */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Switch size="small" checked={avoidInterchange} onChange={setAvoidInterchange} />
-              <Typography.Text style={{ fontSize: 13, color: '#64748b' }}>Direct routes only</Typography.Text>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Switch size="small" checked={avoidInterchange} onChange={setAvoidInterchange} />
+                <Typography.Text style={{ fontSize: 13, color: '#64748b' }}>Direct routes only</Typography.Text>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Switch size="small" checked={accessibleOnly} onChange={setAccessibleOnly} />
+                <Typography.Text style={{ fontSize: 13, color: '#64748b' }}>♿ Accessible stations only</Typography.Text>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {searched && (

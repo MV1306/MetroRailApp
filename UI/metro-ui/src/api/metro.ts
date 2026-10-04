@@ -1,5 +1,5 @@
 import api from './axios';
-import type { Station, StationDetail, Line, LineStation, RouteOption, FavouriteRoute, StationLive, LineLive, Ticket } from '../types';
+import type { Station, StationDetail, Line, LineStation, RouteOption, FavouriteRoute, StationLive, LineLive, Ticket, LineTimetable, JourneyStats } from '../types';
 
 export const metroApi = {
   getStations: (search?: string) =>
@@ -23,7 +23,10 @@ export const metroApi = {
   bookTicket: (fromStationId: number, toStationId: number, passengers: number) =>
     api.post<Ticket>('/tickets', { fromStationId, toStationId, passengers }),
   getMyTickets: () => api.get<Ticket[]>('/tickets'),
-  validateTicket: (ticketRef: string) => api.post<Ticket>(`/tickets/${ticketRef}/validate`),
+  cancelTicket: (ticketId: number) => api.delete<Ticket>(`/tickets/${ticketId}`),
+  getTicketStats: () => api.get<JourneyStats>('/tickets/stats'),
+  getTimetable: () => api.get<LineTimetable[]>('/metro/timetable'),
+  getTimetableByLine: (lineId: number) => api.get<LineTimetable[]>(`/metro/timetable/line/${lineId}`),
 };
 
 export const adminTicketApi = {

@@ -89,3 +89,18 @@ export interface Ticket {
   purchasedAt: string; validUntil: string;
   status: 'Active' | 'Used' | 'Expired';
 }
+
+export interface JourneyStats {
+  totalTrips: number;
+  totalDistanceKm: number;
+  totalSpent: number;
+  activeTickets: number;
+  mostVisitedStation?: string;
+}
+
+export interface UserProfile {
+  fullName: string;
+  email: string;
+  createdAt: string;
+  mfaEnabled: boolean;
+}

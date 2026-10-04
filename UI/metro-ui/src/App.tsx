@@ -22,6 +22,8 @@ import MetroMap from './pages/user/MetroMap';
 import HomePage from './pages/user/HomePage';
 import TicketBooking from './pages/user/TicketBooking';
 import MfaSetupPage from './pages/user/MfaSetupPage';
+import ProfilePage from './pages/user/ProfilePage';
+import TimetablePage from './pages/user/TimetablePage';
 
 export default function App() {
   return (
@@ -53,7 +55,9 @@ export default function App() {
                 <Route path="/fare" element={<FareCalculator />} />
                 <Route path="/map" element={<MetroMap />} />
                 <Route path="/tickets" element={<ProtectedRoute userOnly><TicketBooking /></ProtectedRoute>} />
+                <Route path="/timetable" element={<TimetablePage />} />
                 <Route path="/mfa-setup" element={<ProtectedRoute userOnly><MfaSetupPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute userOnly><ProfilePage /></ProtectedRoute>} />
               </Routes>
             </div>
           </div>

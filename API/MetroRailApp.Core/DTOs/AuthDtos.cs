@@ -18,3 +18,11 @@ public record LoginResponseDto(string? Token, string? Email, string? FullName, s
 public record MfaSetupResponseDto(string SharedKey, string AuthenticatorUri);
 
 public record MfaVerifyDto([Required, StringLength(7, MinimumLength = 6)] string Code);
+
+public record UserProfileDto(string FullName, string Email, DateTime CreatedAt, bool MfaEnabled);
+
+public record UpdateProfileDto([Required, MaxLength(100)] string FullName);
+
+public record ChangePasswordDto(
+    [Required] string CurrentPassword,
+    [Required, MinLength(8), MaxLength(100)] string NewPassword);

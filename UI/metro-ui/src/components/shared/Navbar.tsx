@@ -6,15 +6,17 @@ import {
   HomeOutlined, CompassOutlined, EnvironmentOutlined,
   DollarOutlined, GlobalOutlined, SettingOutlined,
   LogoutOutlined, UserOutlined, TagsOutlined, SafetyOutlined,
+  ScheduleOutlined,
 } from '@ant-design/icons';
 
 const NAV = [
-  { key: '/',         label: 'Home',     icon: <HomeOutlined />,        adminHidden: false },
-  { key: '/journey',  label: 'Journey',  icon: <CompassOutlined />,     adminHidden: true },
-  { key: '/stations', label: 'Stations', icon: <EnvironmentOutlined />, adminHidden: false },
-  { key: '/fare',     label: 'Fare',     icon: <DollarOutlined />,      adminHidden: false },
-  { key: '/map',      label: 'Map',      icon: <GlobalOutlined />,      adminHidden: false },
-  { key: '/tickets',  label: 'Tickets',  icon: <TagsOutlined />,        adminHidden: true },
+  { key: '/',           label: 'Home',      icon: <HomeOutlined />,        adminHidden: false },
+  { key: '/journey',    label: 'Journey',   icon: <CompassOutlined />,     adminHidden: true },
+  { key: '/stations',   label: 'Stations',  icon: <EnvironmentOutlined />, adminHidden: false },
+  { key: '/fare',       label: 'Fare',      icon: <DollarOutlined />,      adminHidden: false },
+  { key: '/map',        label: 'Map',       icon: <GlobalOutlined />,      adminHidden: false },
+  { key: '/tickets',    label: 'Tickets',   icon: <TagsOutlined />,        adminHidden: true },
+  { key: '/timetable',  label: 'Timetable', icon: <ScheduleOutlined />,    adminHidden: false },
 ];
 
 export function Navbar() {
@@ -34,12 +36,14 @@ export function Navbar() {
 
   const userMenuItems = [
     ...(isAdmin ? [{ key: 'admin', label: 'Admin Panel', icon: <SettingOutlined /> }] : []),
+    { key: 'profile', label: 'My Profile', icon: <UserOutlined /> },
     { key: 'mfa-setup', label: 'Two-Factor Auth', icon: <SafetyOutlined /> },
     { key: 'logout', label: 'Sign Out', icon: <LogoutOutlined />, danger: true },
   ];
 
   const handleUserMenu = ({ key }: { key: string }) => {
     if (key === 'admin') navigate('/admin');
+    if (key === 'profile') navigate('/profile');
     if (key === 'mfa-setup') navigate('/mfa-setup');
     if (key === 'logout') { logout(); navigate('/'); }
   };

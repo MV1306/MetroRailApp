@@ -26,6 +26,18 @@ public class TicketController(ITicketService ticketService) : ControllerBase
     public async Task<IActionResult> GetMyTickets() =>
         Ok(await ticketService.GetMyTicketsAsync(UserId));
 
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats() =>
+        Ok(await ticketService.GetStatsAsync(UserId));
+
+    [HttpDelete("{ticketId:int}")]
+    public async Task<IActionResult> Cancel(int ticketId)
+    {
+        try { return Ok(await ticketService.CancelAsync(UserId, ticketId)); }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
     [HttpGet("{ticketRef}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetByRef(string ticketRef)
