@@ -7,7 +7,7 @@ import type { Line, LineTimetable } from '../../types';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 const DIRECTIONS = ['Forward', 'Backward'];
-const DAY_TYPES = ['Weekday', 'Weekend'];
+const DAY_TYPES = ['Weekday', 'Saturday', 'SundayAndHoliday'];
 
 function fmtTime(hhmm: string) {
   return dayjs(`2000-01-01 ${hhmm}`).format('hh:mm A');

@@ -34,8 +34,12 @@ public class TrainRunGeneratorService(IServiceScopeFactory scopeFactory, ILogger
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var today = DateTime.UtcNow.Date;
-            var dayType = today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
-                ? DayType.Weekend : DayType.Weekday;
+            var dayType = today.DayOfWeek switch
+            {
+                DayOfWeek.Saturday => DayType.Saturday,
+                DayOfWeek.Sunday => DayType.SundayAndHoliday,
+                _ => DayType.Weekday
+            };
 
             // remove stale runs (older than today)
             var stale = await db.TrainRuns.Where(r => r.DepartureFromTerminal.Date < today).ToListAsync(ct);

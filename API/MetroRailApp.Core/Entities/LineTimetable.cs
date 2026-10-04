@@ -1,6 +1,6 @@
 namespace MetroRailApp.Core.Entities;
 
-public enum DayType { Weekday, Weekend }
+public enum DayType { Weekday, Saturday, SundayAndHoliday }
 public enum TrainDirection { Forward, Backward }
 
 public class PeakWindow

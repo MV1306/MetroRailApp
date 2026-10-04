@@ -136,8 +136,12 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
     public async Task<StationLiveDto> GetNextDeparturesAsync(int stationId, int count = 5, int? toStationId = null)
     {
         var now = DateTime.UtcNow;
-        var dayType = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
-            ? DayType.Weekend : DayType.Weekday;
+        var dayType = now.DayOfWeek switch
+        {
+            DayOfWeek.Saturday => DayType.Saturday,
+            DayOfWeek.Sunday => DayType.SundayAndHoliday,
+            _ => DayType.Weekday
+        };
 
         var station = await db.Stations.FindAsync(stationId);
         if (station == null) return new StationLiveDto(stationId, "", []);
@@ -232,8 +236,12 @@ public class LiveTrainService(AppDbContext db) : ILiveTrainService
     public async Task<LineLiveDto> GetActiveTrainsAsync(int lineId)
     {
         var now = DateTime.UtcNow;
-        var dayType = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
-            ? DayType.Weekend : DayType.Weekday;
+        var dayType = now.DayOfWeek switch
+        {
+            DayOfWeek.Saturday => DayType.Saturday,
+            DayOfWeek.Sunday => DayType.SundayAndHoliday,
+            _ => DayType.Weekday
+        };
 
         var line = await db.Lines.FindAsync(lineId);
         if (line == null) return new LineLiveDto("", "", []);
